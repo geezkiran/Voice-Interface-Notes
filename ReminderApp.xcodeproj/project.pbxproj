@@ -8,17 +8,17 @@
 
 /* Begin PBXBuildFile section */
 		100E39E237219AAE21C0D5C4 /* ReminderAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A584AE0DADB288B8FDB6530 /* ReminderAppApp.swift */; };
-		3B1B81E34F5F39B2191E256D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7FF53B6000B3D828376B0613 /* Assets.xcassets */; };
+		78D5CABC36E9EA3AFA6BF17E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9F0972F2DF55C299A6C0A97 /* Assets.xcassets */; };
 		D8FA0D8A278D24861369F46A /* ReminderApp in Frameworks */ = {isa = PBXBuildFile; productRef = D8CB4A55CF608EE059C671EB /* ReminderApp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		2DF17696BC744608EACFB86E /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
-		7FF53B6000B3D828376B0613 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		805067150B8CCF1739E43394 /* DesignSystem */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DesignSystem; path = DesignSystem; sourceTree = SOURCE_ROOT; };
-		83D92EAE20FC85A651EFD926 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		85BB0FAEB1664904592B6434 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8A584AE0DADB288B8FDB6530 /* ReminderAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderAppApp.swift; sourceTree = "<group>"; };
 		8D98EA37CC589A48BD1F5D54 /* Reminder.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Reminder.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C9F0972F2DF55C299A6C0A97 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +59,15 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
+		C5FD6066647FC6D4E562AC10 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				C9F0972F2DF55C299A6C0A97 /* Assets.xcassets */,
+				85BB0FAEB1664904592B6434 /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		D45D05BCF2869004F1A7455A /* Reminder App */ = {
 			isa = PBXGroup;
 			children = (
@@ -71,9 +80,8 @@
 		DFCB3BCF244590EF1642DC91 /* App */ = {
 			isa = PBXGroup;
 			children = (
-				7FF53B6000B3D828376B0613 /* Assets.xcassets */,
-				83D92EAE20FC85A651EFD926 /* Info.plist */,
 				8A584AE0DADB288B8FDB6530 /* ReminderAppApp.swift */,
+				C5FD6066647FC6D4E562AC10 /* Resources */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -143,7 +151,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3B1B81E34F5F39B2191E256D /* Assets.xcassets in Resources */,
+				78D5CABC36E9EA3AFA6BF17E /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -170,7 +178,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = SCT7NDQ4KJ;
-				INFOPLIST_FILE = App/Info.plist;
+				INFOPLIST_FILE = App/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -310,7 +318,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = SCT7NDQ4KJ;
-				INFOPLIST_FILE = App/Info.plist;
+				INFOPLIST_FILE = App/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
