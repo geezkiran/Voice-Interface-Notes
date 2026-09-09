@@ -29,10 +29,10 @@ targets:
     info:
       path: App/Resources/Info.plist
       properties:
-        # The name under the icon and in Settings. It is deliberately not the
-        # target name — the target, module and bundle id stay `Reminder*` so
-        # renaming the app is a one-line change here rather than a rewrite.
-        CFBundleDisplayName: Notes
+        # The name under the icon, in Settings, and on the App Store listing.
+        # It was `Notes` until it became clear App Review rejects names that
+        # collide with Apple's own system apps.
+        CFBundleDisplayName: Capture
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         # Asked at the moment the capture button is tapped, never at launch —
