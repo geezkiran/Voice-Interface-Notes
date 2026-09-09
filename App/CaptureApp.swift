@@ -2,7 +2,7 @@ import SwiftUI
 import ReminderApp
 
 @main
-struct ReminderAppApp: App {
+struct CaptureApp: App {
     var body: some Scene {
         WindowGroup {
             // Appearance (light/dark) is applied inside `RootView`, alongside

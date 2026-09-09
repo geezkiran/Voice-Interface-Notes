@@ -1,4 +1,4 @@
-name: ReminderApp
+name: Capture
 options:
   bundleIdPrefix: com.kiransreminderapp
   deploymentTarget:
@@ -7,7 +7,7 @@ packages:
   DesignSystem:
     path: DesignSystem
 targets:
-  Reminder:
+  Capture:
     type: application
     platform: iOS
     sources:
