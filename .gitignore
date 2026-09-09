@@ -1,0 +1,14 @@
+# The real Groq key lives here. Never committed — copy
+# Secrets.example.xcconfig to Secrets.xcconfig and fill it in.
+Secrets.xcconfig
+
+.DS_Store
+
+# Build products
+build/
+.build/
+DerivedData/
+
+# Per-user Xcode state (window layout, breakpoints, schemes)
+*.xcuserdatad
+xcuserdata/

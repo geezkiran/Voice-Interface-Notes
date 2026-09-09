@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 129" width="144" height="129" fill="none">
+  <!-- The brand mark, transcribed from the vector geometry in GenerateAppIcon.swift.
+       Source space is 144x129, y down — the same space the icon generator measures in.
+       Monochrome by design: it is a template mark, so it takes currentColor. -->
+  <g stroke="currentColor" stroke-width="8" stroke-linejoin="round" fill="none">
+    <!-- Folder outline -->
+    <path stroke-linecap="butt" d="M20 5 L46 5 Q56 6 62 20 L123 20 A15 15 0 0 1 138 35 L138 108 A15 15 0 0 1 123 123 L20 123 A15 15 0 0 1 5 108 L5 20 A15 15 0 0 1 20 5 Z"/>
+    <!-- J-shaped nose -->
+    <path stroke-linecap="butt" d="M74.5 49 L74.5 73.5 L65 73.5"/>
+    <!-- Smile -->
+    <path stroke-linecap="round" d="M56 86.5 C60 98 84 98 88 86.5"/>
+  </g>
+  <!-- Eyes -->
+  <g fill="currentColor">
+    <rect x="41" y="45" width="9" height="18" rx="2" ry="2"/>
+    <rect x="94" y="45" width="9" height="18" rx="2" ry="2"/>
+  </g>
+</svg>

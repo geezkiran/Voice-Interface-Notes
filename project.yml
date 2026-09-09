@@ -1,0 +1,66 @@
+name: ReminderApp
+options:
+  bundleIdPrefix: com.reminderapp
+  deploymentTarget:
+    iOS: "26.0"
+packages:
+  DesignSystem:
+    path: DesignSystem
+targets:
+  Reminder:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+    dependencies:
+      - package: DesignSystem
+        product: ReminderApp
+    # Supplies GROQ_API_KEY. The file is gitignored and not in the repo — copy
+    # Secrets.example.xcconfig to Secrets.xcconfig before generating the
+    # project. An empty key is fine; the app degrades to heuristics.
+    configFiles:
+      Debug: Secrets.xcconfig
+      Release: Secrets.xcconfig
+    # A real Info.plist rather than GENERATE_INFOPLIST_FILE, because Xcode's
+    # INFOPLIST_KEY_* build settings only pass through Apple's own known keys —
+    # an arbitrary one like GROQ_API_KEY is silently dropped, with no error and
+    # no entry in the built plist. $(GROQ_API_KEY) is expanded from
+    # Secrets.xcconfig at build time.
+    info:
+      path: App/Info.plist
+      properties:
+        # The name under the icon and in Settings. It is deliberately not the
+        # target name — the target, module and bundle id stay `Reminder*` so
+        # renaming the app is a one-line change here rather than a rewrite.
+        CFBundleDisplayName: Notes
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        # Asked at the moment the capture button is tapped, never at launch —
+        # the plan's rule that a permission arrives attached to the action that
+        # needs it, so it reads as the app doing something rather than the app
+        # asking for something.
+        #
+        # There is no NSSpeechRecognitionUsageDescription any more: that key is
+        # for Apple's on-device Speech framework, which the app no longer uses.
+        # Transcription is a Deepgram WebSocket now, so the microphone prompt is
+        # the only one — and it has to say the audio leaves the device, because
+        # it does.
+        NSMicrophoneUsageDescription: So you can talk instead of type. What you say is sent to our transcription service to turn into text as you speak.
+        GROQ_API_KEY: $(GROQ_API_KEY)
+        DEEPGRAM_API_KEY: $(DEEPGRAM_API_KEY)
+    settings:
+      base:
+        # These four were only ever set in the generated .pbxproj, which meant
+        # regenerating the project silently dropped them. They live here now so
+        # this file is actually the source of truth it's supposed to be.
+        PRODUCT_BUNDLE_IDENTIFIER: com.kiransreminderapp.app
+        DEVELOPMENT_TEAM: SCT7NDQ4KJ
+        CODE_SIGN_IDENTITY: iPhone Developer
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+        LD_RUNPATH_SEARCH_PATHS:
+          - $(inherited)
+          - "@executable_path/Frameworks"
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1"
