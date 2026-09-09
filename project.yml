@@ -1,6 +1,6 @@
 name: ReminderApp
 options:
-  bundleIdPrefix: com.reminderapp
+  bundleIdPrefix: com.kiransreminderapp
   deploymentTarget:
     iOS: "26.0"
 packages:
@@ -45,6 +45,10 @@ targets:
         # Transcription is a Deepgram WebSocket now, so the microphone prompt is
         # the only one — and it has to say the audio leaves the device, because
         # it does.
+        # Declares that the app uses only standard HTTPS/WSS, which is exempt
+        # under US export rules. Without it App Store Connect asks on every
+        # single upload and holds the build until answered.
+        ITSAppUsesNonExemptEncryption: false
         NSMicrophoneUsageDescription: So you can talk instead of type. What you say is sent to our transcription service to turn into text as you speak.
         GROQ_API_KEY: $(GROQ_API_KEY)
         DEEPGRAM_API_KEY: $(DEEPGRAM_API_KEY)
@@ -55,7 +59,12 @@ targets:
         # this file is actually the source of truth it's supposed to be.
         PRODUCT_BUNDLE_IDENTIFIER: com.kiransreminderapp.app
         DEVELOPMENT_TEAM: SCT7NDQ4KJ
-        CODE_SIGN_IDENTITY: iPhone Developer
+        # No CODE_SIGN_IDENTITY here on purpose. It used to be pinned to
+        # "iPhone Developer" -- the legacy name for a *development* certificate
+        # -- for Release as well as Debug, which cannot produce an App Store
+        # build. With CODE_SIGN_STYLE Automatic and no identity pinned, Xcode
+        # picks Apple Development for local runs and Apple Distribution when
+        # archiving, which is what an upload needs.
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_STYLE: Automatic
         LD_RUNPATH_SEARCH_PATHS:
