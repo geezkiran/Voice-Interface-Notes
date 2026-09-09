@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds ReminderAppIOS (the real three-screen app, not the component
+# Builds CapturePreviewIOS (the real three-screen app, not the component
 # gallery), wraps it into a throwaway .app bundle -- SwiftPM's executable
 # target produces a bare Mach-O, not an app bundle -- then installs and
 # launches it on a chosen iOS Simulator device. The sibling
@@ -19,7 +19,7 @@ if [ -z "$DEVICE_ID" ]; then
 fi
 
 cd "$DS_DIR"
-xcodebuild -scheme ReminderAppIOS -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/xcode build
+xcodebuild -scheme CapturePreviewIOS -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/xcode build
 
 # The Groq key, for the simulator path only. The real app target reads this
 # through XcodeGen's configFiles; this bundle is hand-assembled below, so the
@@ -33,10 +33,10 @@ if [ -f "$SECRETS" ]; then
 fi
 
 PRODUCTS="$DS_DIR/.build/xcode/Build/Products/Debug-iphonesimulator"
-APP="$PRODUCTS/ReminderAppIOS.app"
+APP="$PRODUCTS/CapturePreviewIOS.app"
 rm -rf "$APP"
 mkdir -p "$APP"
-cp "$PRODUCTS/ReminderAppIOS" "$APP/ReminderAppIOS"
+cp "$PRODUCTS/CapturePreviewIOS" "$APP/CapturePreviewIOS"
 
 # SwiftPM puts a target's resources in a sibling .bundle rather than inside the
 # executable, so a hand-assembled .app has to carry it across by hand.
@@ -52,10 +52,10 @@ cat > "$APP/Info.plist" <<EOF
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>CFBundleExecutable</key><string>ReminderAppIOS</string>
+  <key>CFBundleExecutable</key><string>CapturePreviewIOS</string>
   <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
-  <key>CFBundleName</key><string>ReminderAppIOS</string>
-  <key>CFBundleDisplayName</key><string>Reminder</string>
+  <key>CFBundleName</key><string>CapturePreviewIOS</string>
+  <key>CFBundleDisplayName</key><string>Capture</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>1.0</string>
   <key>CFBundleVersion</key><string>1</string>

@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8C466FF2663C7810AE3F05F7 /* ReminderApp in Frameworks */ = {isa = PBXBuildFile; productRef = B96741F4B50B3F4C5A0417F3 /* ReminderApp */; };
+		8C466FF2663C7810AE3F05F7 /* CaptureKit in Frameworks */ = {isa = PBXBuildFile; productRef = 93C4816ABDC836ED946A95D7 /* CaptureKit */; };
 		A7A8E342159E531AF3FF6622 /* CaptureApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3703E2A74F8D0CD3B88EC8 /* CaptureApp.swift */; };
 		CA6E4DDDC9AF86686DACFE89 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 81C2E9D178D83DA4AC73A82F /* Assets.xcassets */; };
 		FA8704D08E22379551213FEE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 903377381EEA66ACB2C63FFD /* PrivacyInfo.xcprivacy */; };
@@ -20,7 +20,7 @@
 		81C2E9D178D83DA4AC73A82F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		87747926BD259319B628DB73 /* Capture.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Capture.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		903377381EEA66ACB2C63FFD /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		D7AC13589A81DFFDD2BEBF26 /* DesignSystem */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DesignSystem; path = DesignSystem; sourceTree = SOURCE_ROOT; };
+		BB8A0DED12EF267AE11631D0 /* Capture */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Capture; path = Capture; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -28,7 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8C466FF2663C7810AE3F05F7 /* ReminderApp in Frameworks */,
+				8C466FF2663C7810AE3F05F7 /* CaptureKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -57,7 +57,7 @@
 		8FB6CB6E34A74958E0249692 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				D7AC13589A81DFFDD2BEBF26 /* DesignSystem */,
+				BB8A0DED12EF267AE11631D0 /* Capture */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -106,7 +106,7 @@
 			);
 			name = Capture;
 			packageProductDependencies = (
-				B96741F4B50B3F4C5A0417F3 /* ReminderApp */,
+				93C4816ABDC836ED946A95D7 /* CaptureKit */,
 			);
 			productName = Capture;
 			productReference = 87747926BD259319B628DB73 /* Capture.app */;
@@ -137,7 +137,7 @@
 			mainGroup = 996D730C62AE43D58B094870;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				76062D1E3BB90FFAA1562D78 /* XCLocalSwiftPackageReference "DesignSystem" */,
+				FAE73276B98334701F9EC6E6 /* XCLocalSwiftPackageReference "Capture" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = EC5F676C046689FB3E6D14C3 /* Products */;
@@ -358,16 +358,16 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		76062D1E3BB90FFAA1562D78 /* XCLocalSwiftPackageReference "DesignSystem" */ = {
+		FAE73276B98334701F9EC6E6 /* XCLocalSwiftPackageReference "Capture" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = DesignSystem;
+			relativePath = Capture;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B96741F4B50B3F4C5A0417F3 /* ReminderApp */ = {
+		93C4816ABDC836ED946A95D7 /* CaptureKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = ReminderApp;
+			productName = CaptureKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

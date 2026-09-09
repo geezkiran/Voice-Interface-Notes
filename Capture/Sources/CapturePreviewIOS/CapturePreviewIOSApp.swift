@@ -1,6 +1,6 @@
 import SwiftUI
 #if os(iOS)
-import ReminderApp
+import CaptureKit
 #endif
 
 /// iOS Simulator host for the real app — built as a bare executable and
@@ -8,7 +8,7 @@ import ReminderApp
 /// same trick `DesignSystemPreviewIOS` uses for the gallery.
 #if os(iOS)
 @main
-struct ReminderAppIOSApp: App {
+struct CapturePreviewIOSApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -20,9 +20,9 @@ struct ReminderAppIOSApp: App {
 /// `swift build` on macOS builds every target in the package; this keeps the
 /// iOS host linkable there without pretending the app runs on the Mac.
 @main
-struct ReminderAppIOSApp {
+struct CapturePreviewIOSApp {
     static func main() {
-        print("ReminderAppIOS is an iOS Simulator host — run scripts/run-ios-app.sh.")
+        print("CapturePreviewIOS is an iOS Simulator host — run scripts/run-ios-app.sh.")
     }
 }
 #endif

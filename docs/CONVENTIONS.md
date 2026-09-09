@@ -10,9 +10,9 @@ project file to update.
 
 | What you are adding | Where it goes |
 |---|---|
-| A screen the user navigates to | `Sources/ReminderApp/Features/<Feature>/` |
+| A screen the user navigates to | `Sources/CaptureKit/Features/<Feature>/` |
 | A type only that one feature uses | the same feature folder, beside the screen |
-| A type a second feature references | `Sources/ReminderApp/Core/…` — the moment it has two consumers, it is Core |
+| A type a second feature references | `Sources/CaptureKit/Core/…` — the moment it has two consumers, it is Core |
 | A domain type (describes a capture) | `Core/Models/` |
 | Anything that reads or writes stored state | `Core/Persistence/` |
 | Anything that talks to the network, mic, or disk beyond the store | `Core/Services/` |
@@ -41,8 +41,8 @@ reason this codebase restructured cleanly.
 
 ## Access control
 
-- **`Sources/ReminderApp/`** — default to `internal`, i.e. write no modifier. Mark `public`
-  only for what `App/ReminderAppApp.swift` or `ReminderAppIOS` actually needs, which today
+- **`Sources/CaptureKit/`** — default to `internal`, i.e. write no modifier. Mark `public`
+  only for what `App/CaptureApp.swift` or `CapturePreviewIOS` actually needs, which today
   is `RootView` and the model types its previews touch.
 - **`Sources/DesignSystem/`** — `public` is the point; it is a library. Everything a
   consumer needs, including the memberwise init, must be explicitly `public`.
@@ -66,14 +66,14 @@ Existing files vary; match the file you are in rather than reformatting it in pa
 ## Tests
 
 There are none yet. When the first one is written it goes in a `.testTarget` in
-`Package.swift`, under `DesignSystem/Tests/ReminderAppTests/`, mirroring the source tree
+`Package.swift`, under `Capture/Tests/CaptureKitTests/`, mirroring the source tree
 one folder at a time — `Core/Persistence/CaptureStoreTests.swift` for
 `Core/Persistence/CaptureStore.swift`. Start with `Core/`; the screens have no view models
 to test against.
 
 ## Things that are pinned and must not move
 
-`project.yml`, `Secrets.xcconfig`, `App/Resources/Info.plist`, `DesignSystem/scripts/`.
+`project.yml`, `Secrets.xcconfig`, `App/Resources/Info.plist`, `Capture/scripts/`.
 Each is referenced by an absolute or self-relative path that breaks silently.
-`ReminderApp.xcodeproj` is **generated** — never edit it; edit `project.yml` and run
+`Capture.xcodeproj` is **generated** — never edit it; edit `project.yml` and run
 `xcodegen generate`.

@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "DesignSystem",
+    name: "Capture",
     platforms: [
         // iOS 26 is the floor because the whole visual language is built on the
         // native Liquid Glass APIs (`glassEffect`, `GlassEffectContainer`,
@@ -13,10 +13,10 @@ let package = Package(
     products: [
         .library(name: "DesignSystem", targets: ["DesignSystem"]),
         .library(name: "DesignSystemDemo", targets: ["DesignSystemDemo"]),
-        .library(name: "ReminderApp", targets: ["ReminderApp"]),
+        .library(name: "CaptureKit", targets: ["CaptureKit"]),
         .executable(name: "DesignSystemPreviewMac", targets: ["DesignSystemPreviewMac"]),
         .executable(name: "DesignSystemPreviewIOS", targets: ["DesignSystemPreviewIOS"]),
-        .executable(name: "ReminderAppIOS", targets: ["ReminderAppIOS"])
+        .executable(name: "CapturePreviewIOS", targets: ["CapturePreviewIOS"])
     ],
     targets: [
         // Carries Sorts Mill Goudy (OFL, see Resources/Fonts/OFL.txt) as a bundled
@@ -27,7 +27,7 @@ let package = Package(
         // The app itself: the three screens (Home / Transcribing / Editing) plus
         // their in-memory store. Kept as a library so it stays previewable and
         // testable without an Xcode app project existing yet.
-        .target(name: "ReminderApp", dependencies: ["DesignSystem"]),
+        .target(name: "CaptureKit", dependencies: ["DesignSystem"]),
         // macOS-only window host for `DSGalleryView`, so the system can be screenshotted
         // from the CLI without needing the iOS Simulator or Xcode's canvas open.
         .executableTarget(name: "DesignSystemPreviewMac", dependencies: ["DesignSystem", "DesignSystemDemo"]),
@@ -36,6 +36,6 @@ let package = Package(
         .executableTarget(name: "DesignSystemPreviewIOS", dependencies: ["DesignSystem", "DesignSystemDemo"]),
         // Same trick, but hosting the real app instead of the gallery — see
         // scripts/run-ios-app.sh.
-        .executableTarget(name: "ReminderAppIOS", dependencies: ["ReminderApp"])
+        .executableTarget(name: "CapturePreviewIOS", dependencies: ["CaptureKit"])
     ]
 )

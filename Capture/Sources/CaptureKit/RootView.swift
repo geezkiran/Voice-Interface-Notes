@@ -14,7 +14,7 @@ import DesignSystem
 /// The bar carries the capture button rather than a third tab: capture is an
 /// action, not a place, and it stays reachable from either root.
 ///
-/// Owns the single `CaptureStore`. Public so the thin `ReminderAppIOS`
+/// Owns the single `CaptureStore`. Public so the thin `CapturePreviewIOS`
 /// executable (and `scripts/run-ios-app.sh`) can mount it without the screens
 /// themselves having to leak out of this module.
 ///

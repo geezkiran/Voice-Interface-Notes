@@ -1,5 +1,13 @@
 # Proposed structure
 
+> **Names have changed since this document was written.** The app was renamed
+> from `Notes` to `Capture` afterwards: target `Reminder` → `Capture`, project
+> `ReminderApp.xcodeproj` → `Capture.xcodeproj`, package `DesignSystem/` →
+> `Capture/`, module `ReminderApp` → `CaptureKit`, `ReminderAppIOS` →
+> `CapturePreviewIOS`, `App/ReminderAppApp.swift` → `App/CaptureApp.swift`.
+> Paths and names below are left as they were, because this is a record of what
+> the project looked like at the time.
+
 Derived from `ARCHITECTURE_AUDIT.md`. **Nothing has been moved.** Every folder below is
 justified against files that actually exist, with the audit's reference counts as the
 evidence. Open questions are collected in §6 rather than decided silently.

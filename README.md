@@ -1,7 +1,7 @@
-# Notes
+# Capture
 
 A capture-first reminders app for iOS. You talk; it transcribes, works out what you meant,
-and files it. Ships as `Notes` (`com.kiransreminderapp.app`), built from the `Reminder`
+and files it. Ships as `Capture` (`com.kiransreminderapp.app`), built from the `Capture`
 target.
 
 Requires **iOS 26** — the interface is built on the native Liquid Glass APIs
@@ -12,8 +12,8 @@ equivalent.
 
 ```bash
 cp Secrets.example.xcconfig Secrets.xcconfig    # first time only; empty keys are fine
-xcodegen generate                               # regenerates ReminderApp.xcodeproj
-xcodebuild -project ReminderApp.xcodeproj -scheme Reminder \
+xcodegen generate                               # regenerates Capture.xcodeproj
+xcodebuild -project Capture.xcodeproj -scheme Capture \
   -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' build
 ```
 
@@ -21,40 +21,40 @@ xcodebuild -project ReminderApp.xcodeproj -scheme Reminder \
 through `App/Resources/Info.plist`. It is gitignored. With an empty Groq key the app falls
 back to heuristics; with an empty Deepgram key transcription is simulated.
 
-`ReminderApp.xcodeproj` is generated from `project.yml` by
+`Capture.xcodeproj` is generated from `project.yml` by
 [XcodeGen](https://github.com/yonaskolb/XcodeGen) — edit the YAML, never the project file.
 
 There is **no test target yet**. See `docs/RECOMMENDATIONS.md`.
 
-There is a second way to launch the app, `DesignSystem/scripts/run-ios-app.sh`, which
-builds the `ReminderAppIOS` SwiftPM executable and wraps it in a throwaway bundle. It
+There is a second way to launch the app, `Capture/scripts/run-ios-app.sh`, which
+builds the `CapturePreviewIOS` SwiftPM executable and wraps it in a throwaway bundle. It
 installs a *different* bundle id (`com.reminderapp.app`) and is not the shipping path.
 
 ## Structure
 
 ```
 App/                        the Xcode target: @main, Info.plist, app icon
-├── ReminderAppApp.swift
-└── Resources/
-DesignSystem/               one local SPM package, several targets
+├── CaptureApp.swift
+└── Resources/           Info.plist, PrivacyInfo.xcprivacy, app icon
+Capture/                    one local SPM package, several targets
 └── Sources/
     ├── DesignSystem/       the design system library — DS-prefixed components and tokens
     │   ├── Tokens/         colour, type, spacing, radius, appearance
     │   ├── Components/     reusable views and button styles
-    │   └── Resources/      Sorts Mill Goudy, logo and avatar assets
-    ├── ReminderApp/        the app itself, as a library so it stays previewable
+    │   └── Resources/           Info.plist, PrivacyInfo.xcprivacy, app icon      Sorts Mill Goudy, logo and avatar assets
+    ├── CaptureKit/         the app itself, as a library so it stays previewable
     │   ├── RootView.swift  tab bar, app state, appearance
     │   ├── Features/       Capture · Home · Schedule · Settings
     │   └── Core/           Models · Persistence · Services · Support
     ├── DesignSystemDemo/   component gallery
     ├── DesignSystemPreviewIOS/, DesignSystemPreviewMac/   hosts for the gallery
-    └── ReminderAppIOS/     SwiftPM host for the real app
+    └── CapturePreviewIOS/  SwiftPM host for the real app
 Tools/                      standalone script that draws the app icon
 docs/                       PLAN.md and the architecture documents
 _Review/                    quarantined, uncompiled — see _Review/REVIEW.md
 ```
 
-The app target links the `ReminderApp` product; `DesignSystem` comes in transitively.
+The app target links the `CaptureKit` product; `DesignSystem` comes in transitively.
 Nothing depends on anything above it.
 
 ## Documents

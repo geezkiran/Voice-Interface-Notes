@@ -4,8 +4,8 @@ options:
   deploymentTarget:
     iOS: "26.0"
 packages:
-  DesignSystem:
-    path: DesignSystem
+  Capture:
+    path: Capture
 targets:
   Capture:
     type: application
@@ -13,8 +13,8 @@ targets:
     sources:
       - path: App
     dependencies:
-      - package: DesignSystem
-        product: ReminderApp
+      - package: Capture
+        product: CaptureKit
     # Supplies GROQ_API_KEY. The file is gitignored and not in the repo — copy
     # Secrets.example.xcconfig to Secrets.xcconfig before generating the
     # project. An empty key is fine; the app degrades to heuristics.

@@ -1,5 +1,9 @@
 # Quarantine — for review, not deleted
 
+The paths below are the ones these files had when they were quarantined, before
+the package was renamed from `DesignSystem/` to `Capture/`. Restoring a component
+means putting it back under `Capture/Sources/DesignSystem/Components/`.
+
 Nothing here has been deleted. Each file keeps its original relative path under
 `_Review/`, so restoring one is `git mv` back along the same path.
 

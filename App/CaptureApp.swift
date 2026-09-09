@@ -1,5 +1,5 @@
 import SwiftUI
-import ReminderApp
+import CaptureKit
 
 @main
 struct CaptureApp: App {
