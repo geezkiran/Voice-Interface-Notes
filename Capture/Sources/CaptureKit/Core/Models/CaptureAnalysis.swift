@@ -17,7 +17,22 @@ public struct CaptureAnalysis: Sendable {
     /// Two to four things the report genuinely could not resolve.
     public var questions: [String]
     public var actionItems: [String]
-    public var dueAt: Date?
+    /// Whether this note is the kind of thing a person would want reminding
+    /// about — a commitment, an errand, a deadline — as opposed to a thought
+    /// being worked out or a record of something that happened.
+    ///
+    /// Nothing in the data model changes when this is true. It is a question the
+    /// page asks, once, in a banner the user can ignore; only a tap on that
+    /// banner writes a date. See `EditingView.offerReminder`.
+    public var needsReminder: Bool
+    /// The time the note itself indicated, if it indicated one — "Friday at
+    /// five", resolved against the device's clock.
+    ///
+    /// Deliberately *not* applied to the capture. A date the model heard is the
+    /// app's best guess at what the reminder should be set to, and it is offered
+    /// as the banner's first option; a note that quietly acquires an alarm the
+    /// user never asked for is the app scheduling their life for them.
+    public var suggestedDueAt: Date?
     /// Which shelf the model put the note on, or nil when it didn't answer
     /// with one it recognised. Nil leaves the capture on whatever shelf it is
     /// already on — the on-device guess is a worse answer than the model's, but
@@ -32,7 +47,8 @@ public struct CaptureAnalysis: Sendable {
         report: String,
         questions: [String] = [],
         actionItems: [String] = [],
-        dueAt: Date? = nil,
+        needsReminder: Bool = false,
+        suggestedDueAt: Date? = nil,
         type: ItemType? = nil,
         confidence: Double = 0.8
     ) {
@@ -40,7 +56,8 @@ public struct CaptureAnalysis: Sendable {
         self.report = report
         self.questions = questions
         self.actionItems = actionItems
-        self.dueAt = dueAt
+        self.needsReminder = needsReminder
+        self.suggestedDueAt = suggestedDueAt
         self.type = type
         self.confidence = confidence
     }
@@ -96,9 +113,9 @@ public struct CaptureAnalysis: Sendable {
         result.summarizedBody = result.summary
 
         result.confidence = min(max(confidence, 0), 1)
-        // Only ever *adds* a due date. A model that failed to spot a date
-        // shouldn't be able to clear one the user set by hand.
-        if let dueAt { result.dueAt = dueAt }
+        // `suggestedDueAt` is deliberately not written here. A date is something
+        // the person sets, on the banner, in one tap — the model's read of the
+        // note only decides whether that banner is worth putting on screen.
 
         // Stamped alongside the shelf itself, so the page can tell a category a
         // model chose from the keyword guess every capture starts life with —
@@ -144,7 +161,7 @@ public struct CaptureAnalysis: Sendable {
 
     Return ONE JSON object and nothing else. No preamble, no code fences, no
     trailing commentary. Its keys must appear in exactly this order:
-    "title", "report", "questions", "action_items", "due_at",
+    "title", "report", "questions", "action_items", "needs_reminder", "due_at",
     "confidence".
 
     The "report" value is a single string containing the full page, including its
@@ -246,10 +263,29 @@ public struct CaptureAnalysis: Sendable {
 
     ────────────────────────────────
 
-    DUE_AT — ISO 8601 with a timezone offset, or null. Resolve relative dates
-    like "next Tuesday" against the current date and time supplied in the user
-    message. If no time was stated or clearly implied, return null. Never guess a
-    date that was not indicated.
+    NEEDS_REMINDER — true or false, and false is the common answer.
+
+    True only when the note contains something the person has to DO, or be
+    somewhere for, and would be let down by forgetting: a commitment, an
+    appointment, an errand, a deadline, a promise made to someone, a thing to
+    buy or book before an occasion, a renewal, a bill.
+
+    False for everything else — thinking out loud, an opinion, a record of
+    something that already happened, reference material, a design being reasoned
+    about, a list of facts, a wish with no commitment behind it. A date
+    mentioned in passing is not a reason to say true, and neither is an urgent
+    tone. The test is one question: would a notification arriving later actually
+    help this person, or merely interrupt them? If you are not sure, answer
+    false.
+
+    ────────────────────────────────
+
+    DUE_AT — ISO 8601 with a timezone offset, or null. Only meaningful when
+    needs_reminder is true; return null whenever it is false. Resolve relative
+    dates like "next Tuesday" against the current date and time supplied in the
+    user message. If no time was stated or clearly implied, return null — a
+    reminder with no time is a perfectly good answer, and the person will pick
+    one. Never guess a date that was not indicated.
 
     ────────────────────────────────
 
@@ -314,7 +350,8 @@ public struct CaptureAnalysis: Sendable {
             report: payload.report,
             questions: payload.questions,
             actionItems: payload.actionItems,
-            dueAt: payload.dueAt,
+            needsReminder: payload.needsReminder,
+            suggestedDueAt: payload.dueAt,
             type: payload.type,
             confidence: payload.confidence
         )
@@ -348,6 +385,27 @@ public struct CaptureAnalysis: Sendable {
         return String(text[open...close]).data(using: .utf8)
     }
 
+    /// Reads a flag a model may have answered with `true`, `"true"`, `"yes"` or
+    /// `1` — all of which are the same answer — and treats anything else,
+    /// including a missing key, as false.
+    ///
+    /// False is the safe default for every flag this app asks for: the one it
+    /// currently asks about is whether to interrupt the user with a banner, and
+    /// a garbled reply is not a reason to interrupt them. Shared with
+    /// `CaptureRefinement`, which asks the same question of the same endpoint.
+    static func boolean<Key: CodingKey>(
+        _ container: KeyedDecodingContainer<Key>,
+        _ key: Key
+    ) -> Bool {
+        if let flag = try? container.decodeIfPresent(Bool.self, forKey: key) { return flag }
+        if let number = try? container.decodeIfPresent(Int.self, forKey: key) { return number == 1 }
+        guard let text = try? container.decodeIfPresent(String.self, forKey: key) else {
+            return false
+        }
+        let word = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return ["true", "yes", "1"].contains(word)
+    }
+
     /// The wire shape, kept private so the model's snake_case and its tolerance
     /// for nonsense never leak into the app's own value type.
     private struct Payload: Decodable {
@@ -355,6 +413,7 @@ public struct CaptureAnalysis: Sendable {
         var report: String
         var questions: [String]
         var actionItems: [String]
+        var needsReminder: Bool
         var dueAt: Date?
         var type: ItemType?
         var confidence: Double
@@ -362,6 +421,7 @@ public struct CaptureAnalysis: Sendable {
         enum CodingKeys: String, CodingKey {
             case title, report, questions, type, confidence
             case actionItems = "action_items"
+            case needsReminder = "needs_reminder"
             case dueAt = "due_at"
         }
 
@@ -371,9 +431,10 @@ public struct CaptureAnalysis: Sendable {
             report = (try? container.decode(String.self, forKey: .report)) ?? ""
             questions = (try? container.decode([String].self, forKey: .questions)) ?? []
             actionItems = (try? container.decode([String].self, forKey: .actionItems)) ?? []
+            needsReminder = CaptureAnalysis.boolean(container, .needsReminder)
 
             let rawDate = try? container.decodeIfPresent(String.self, forKey: .dueAt)
-            dueAt = rawDate.flatMap(Payload.date(from:))
+            dueAt = rawDate.flatMap(CaptureAnalysis.date(from:))
 
             let rawType = try? container.decodeIfPresent(String.self, forKey: .type)
             type = rawType.flatMap(ItemType.named)
@@ -389,29 +450,34 @@ public struct CaptureAnalysis: Sendable {
             }
             confidence = min(max(confidence, 0), 1)
         }
+    }
+}
 
-        /// Lenient on purpose. Models emit fractional seconds sometimes, drop
-        /// the timezone sometimes, and occasionally answer a bare "2026-04-11"
-        /// when only a day was mentioned. All three are useful answers.
-        static func date(from string: String) -> Date? {
-            let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmed.isEmpty, trimmed.lowercased() != "null" else { return nil }
+extension CaptureAnalysis {
+    /// Lenient on purpose. Models emit fractional seconds sometimes, drop
+    /// the timezone sometimes, and occasionally answer a bare "2026-04-11"
+    /// when only a day was mentioned. All three are useful answers.
+    ///
+    /// Shared with `CaptureRefinement`, which reads the same key off the same
+    /// endpoint and meets the same three spellings.
+    static func date(from string: String) -> Date? {
+        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed.lowercased() != "null" else { return nil }
 
-            let iso = ISO8601DateFormatter()
-            iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            if let date = iso.date(from: trimmed) { return date }
-            iso.formatOptions = [.withInternetDateTime]
-            if let date = iso.date(from: trimmed) { return date }
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = iso.date(from: trimmed) { return date }
+        iso.formatOptions = [.withInternetDateTime]
+        if let date = iso.date(from: trimmed) { return date }
 
-            let fallback = DateFormatter()
-            fallback.locale = Locale(identifier: "en_US_POSIX")
-            fallback.timeZone = TimeZone.current
-            for format in ["yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-dd"] {
-                fallback.dateFormat = format
-                if let date = fallback.date(from: trimmed) { return date }
-            }
-            return nil
+        let fallback = DateFormatter()
+        fallback.locale = Locale(identifier: "en_US_POSIX")
+        fallback.timeZone = TimeZone.current
+        for format in ["yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-dd"] {
+            fallback.dateFormat = format
+            if let date = fallback.date(from: trimmed) { return date }
         }
+        return nil
     }
 }
 
@@ -667,6 +733,13 @@ public struct CaptureRefinement: Sendable {
     public var title: String
     public var questions: [String]
     public var actionItems: [String]
+    /// See `CaptureAnalysis.needsReminder`. This is the field the banner is
+    /// actually driven by in practice: a re-read runs whenever the body changes,
+    /// so the question "is this something to be reminded about?" is re-asked as
+    /// the note is written rather than once at the moment it was made.
+    public var needsReminder: Bool
+    /// See `CaptureAnalysis.suggestedDueAt`. Never applied by `applied(to:)`.
+    public var suggestedDueAt: Date?
     /// See `CaptureAnalysis.type`. A re-read is allowed to change its mind
     /// about the shelf — a note that grew a date is an event now — and nil
     /// still means "leave it where it is".
@@ -677,12 +750,16 @@ public struct CaptureRefinement: Sendable {
         title: String,
         questions: [String] = [],
         actionItems: [String] = [],
+        needsReminder: Bool = false,
+        suggestedDueAt: Date? = nil,
         type: ItemType? = nil,
         confidence: Double = 0.8
     ) {
         self.title = title
         self.questions = questions
         self.actionItems = actionItems
+        self.needsReminder = needsReminder
+        self.suggestedDueAt = suggestedDueAt
         self.type = type
         self.confidence = confidence
     }
@@ -742,8 +819,8 @@ public struct CaptureRefinement: Sendable {
 
     Return ONE JSON object and nothing else. No preamble, no code fences, no
     trailing commentary. Its keys must appear in exactly this order:
-    "title", "report", "questions", "type", "action_items", "due_at",
-    "confidence".
+    "title", "report", "questions", "type", "action_items", "needs_reminder",
+    "due_at", "confidence".
 
     The "report" value is a single string containing the full page, including its
     line breaks. Newlines inside it are escaped as \n. Do not split the report
@@ -862,10 +939,29 @@ public struct CaptureRefinement: Sendable {
 
     ────────────────────────────────
 
-    DUE_AT — ISO 8601 with a timezone offset, or null. Resolve relative dates
-    like "next Tuesday" against the current date and time supplied in the user
-    message. If no time was stated or clearly implied, return null. Never guess a
-    date that was not indicated.
+    NEEDS_REMINDER — true or false, and false is the common answer.
+
+    True only when the note contains something the person has to DO, or be
+    somewhere for, and would be let down by forgetting: a commitment, an
+    appointment, an errand, a deadline, a promise made to someone, a thing to
+    buy or book before an occasion, a renewal, a bill.
+
+    False for everything else — thinking out loud, an opinion, a record of
+    something that already happened, reference material, a design being reasoned
+    about, a list of facts, a wish with no commitment behind it. A date
+    mentioned in passing is not a reason to say true, and neither is an urgent
+    tone. The test is one question: would a notification arriving later actually
+    help this person, or merely interrupt them? If you are not sure, answer
+    false.
+
+    ────────────────────────────────
+
+    DUE_AT — ISO 8601 with a timezone offset, or null. Only meaningful when
+    needs_reminder is true; return null whenever it is false. Resolve relative
+    dates like "next Tuesday" against the current date and time supplied in the
+    user message. If no time was stated or clearly implied, return null — a
+    reminder with no time is a perfectly good answer, and the person will pick
+    one. Never guess a date that was not indicated.
 
     ────────────────────────────────
 
@@ -926,6 +1022,8 @@ public struct CaptureRefinement: Sendable {
             title: payload.title,
             questions: payload.questions,
             actionItems: payload.actionItems,
+            needsReminder: payload.needsReminder,
+            suggestedDueAt: payload.dueAt,
             type: payload.type,
             confidence: payload.confidence
         )
@@ -935,12 +1033,16 @@ public struct CaptureRefinement: Sendable {
         var title: String
         var questions: [String]
         var actionItems: [String]
+        var needsReminder: Bool
+        var dueAt: Date?
         var type: ItemType?
         var confidence: Double
 
         enum CodingKeys: String, CodingKey {
             case title, questions, type, confidence
             case actionItems = "action_items"
+            case needsReminder = "needs_reminder"
+            case dueAt = "due_at"
         }
 
         init(from decoder: Decoder) throws {
@@ -948,6 +1050,10 @@ public struct CaptureRefinement: Sendable {
             title = (try? container.decode(String.self, forKey: .title)) ?? ""
             questions = (try? container.decode([String].self, forKey: .questions)) ?? []
             actionItems = (try? container.decode([String].self, forKey: .actionItems)) ?? []
+            needsReminder = CaptureAnalysis.boolean(container, .needsReminder)
+
+            let rawDate = try? container.decodeIfPresent(String.self, forKey: .dueAt)
+            dueAt = rawDate.flatMap(CaptureAnalysis.date(from:))
 
             let rawType = try? container.decodeIfPresent(String.self, forKey: .type)
             type = rawType.flatMap(ItemType.named)

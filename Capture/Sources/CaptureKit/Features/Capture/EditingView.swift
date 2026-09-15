@@ -97,6 +97,25 @@ struct EditingView: View {
     @State private var proposalTarget: CaptureItem?
     @State private var proposalTask: Task<Void, Never>?
 
+    /// The reminder offer currently over the page, if there is one. Nil is the
+    /// resting state and by far the common one — see `offerReminder`.
+    @State private var reminderOffer: ReminderOffer?
+    /// Whether this trip into the note has already asked about a reminder.
+    ///
+    /// One offer per visit, exactly like the merge/split proposal next door and
+    /// for the same reason: a banner the person let expire is a banner they
+    /// declined, and a note being edited produces a run of re-reads that would
+    /// otherwise each raise it again. Not persisted — a note reopened next week
+    /// is a note whose owner may well have changed their mind about it.
+    @State private var hasOfferedReminder = false
+    /// Whether the wheel is up. Separate from the offer, which is dismissed the
+    /// moment the sheet opens: the banner has said what it came to say.
+    @State private var isPickingReminder = false
+    /// What the wheel opens on — the time the note suggested, when it suggested
+    /// one, so "Pick a time" starts from the app's best guess rather than from
+    /// this second.
+    @State private var pickerDate = Self.defaultSlot
+
     /// Set once this note has been handed to a merge or a split, after which
     /// this screen must never write to the store again.
     ///
@@ -137,16 +156,22 @@ struct EditingView: View {
     var body: some View {
         editor
             // Tapping off a section — on the heading, on the page's margin, on
-            // the timing rows — puts the keyboard down. Tapping into another
+            // the reminder rows — puts the keyboard down. Tapping into another
             // section still just moves the caret.
             .dismissesKeyboardOnOutsideTap()
+            .overlay(alignment: .top) { reminderOverlay }
+            .sheet(isPresented: $isPickingReminder) {
+                ReminderPickerSheet(initial: pickerDate) { setReminder($0) }
+                    .presentationDetents([.height(400)])
+                    .presentationDragIndicator(.visible)
+            }
     }
 
     private var editor: some View {
         ScrollViewReader { proxy in
             List {
                 headerSection
-                timingSection
+                reminderSection
             }
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
@@ -705,30 +730,130 @@ struct EditingView: View {
         .accessibilityLabel("Add to this capture by voice")
     }
 
-    private var timingSection: some View {
-        Section("Timing") {
-            Toggle("Due", isOn: $hasDue.animation())
-                .dsSwitchTint()
-            if hasDue {
-                DatePicker("When", selection: $dueDate)
-                    .datePickerStyle(.compact)
-            }
+    /// The times set on this capture — and nothing at all when none are.
+    ///
+    /// This used to be a standing Timing section on every note: two switches, a
+    /// picker and a priority wheel under an idea, a shopping list, a paragraph
+    /// of thinking. A form under a page that is meant to read as a page. The
+    /// question it was asking is now asked by `ReminderBanner`, only on the
+    /// notes whose own words suggest it, and only over the page — so what is
+    /// left here is not a question but a record: the reminder you set, where you
+    /// can move it or take it off again.
+    ///
+    /// Which is why it is empty until something is set. There is nothing to say
+    /// about the timing of a note that has none.
+    ///
+    /// Priority went with the switches. Nothing in the app reads it — no row, no
+    /// sort, no filter — so it was a control whose only effect was to be there,
+    /// on every note, asking.
+    @ViewBuilder
+    private var reminderSection: some View {
+        if hasDue || hasFollowUp {
+            Section("Reminder") {
+                if hasDue {
+                    DatePicker("Remind me", selection: $dueDate)
+                        .datePickerStyle(.compact)
+                    Toggle("Reminder on", isOn: $hasDue.animation())
+                        .dsSwitchTint()
+                }
 
-            Toggle("Follow up", isOn: $hasFollowUp.animation())
-                .dsSwitchTint()
-            if hasFollowUp {
-                DatePicker("Nudge me", selection: $followUpDate)
-                    .datePickerStyle(.compact)
-            }
-
-            Picker("Priority", selection: $draft.priority) {
-                ForEach(Priority.allCases) { priority in
-                    Text(priority.label).tag(priority)
+                if hasFollowUp {
+                    DatePicker("Follow up", selection: $followUpDate)
+                        .datePickerStyle(.compact)
+                    Toggle("Follow up on", isOn: $hasFollowUp.animation())
+                        .dsSwitchTint()
                 }
             }
+            .font(DSFont.body)
+            .listRowBackground(DSColor.surface)
         }
-        .font(DSFont.body)
-        .listRowBackground(DSColor.surface)
+    }
+
+    // MARK: The reminder offer
+
+    /// One offer, over the page. A struct rather than a bare `Date?` because the
+    /// two states worth telling apart are "no offer" and "an offer that carries
+    /// no time" — a note that should be remembered but never said when.
+    private struct ReminderOffer: Equatable, Identifiable {
+        var suggestedAt: Date?
+        /// Fresh on every offer, so an offer raised twice in one visit — which
+        /// `hasOfferedReminder` already prevents — could never be mistaken by
+        /// the auto-dismiss timer for the one it started counting on.
+        var id = UUID()
+    }
+
+    /// How long the banner stands before it withdraws itself. Long enough to be
+    /// read and answered without hurry, short enough that ignoring it is a real
+    /// way to say no rather than a thing you have to sit through.
+    private static let reminderOfferLifetime: Duration = .seconds(9)
+
+    /// Where the banner sits: under the back button rather than over it. A real
+    /// notification covers the top of the screen, but the top of this screen is
+    /// the only way out of it, and a card that eats the back button for nine
+    /// seconds is a card holding the user hostage while it asks a favour.
+    private static let reminderOfferTopInset: CGFloat = 56
+
+    @ViewBuilder
+    private var reminderOverlay: some View {
+        if let offer = reminderOffer {
+            ReminderBanner(
+                suggestedAt: offer.suggestedAt,
+                onPick: { setReminder($0) },
+                onCustom: {
+                    pickerDate = offer.suggestedAt ?? Self.defaultSlot
+                    dismissReminderOffer()
+                    isPickingReminder = true
+                },
+                onDismiss: { dismissReminderOffer() }
+            )
+            .padding(.horizontal, DSSpacing.sm)
+            .padding(.top, Self.reminderOfferTopInset)
+            .transition(.move(edge: .top).combined(with: .opacity))
+            // Tied to the offer's own id, so the countdown belongs to the banner
+            // on screen and dies with it.
+            .task(id: offer.id) {
+                try? await Task.sleep(for: Self.reminderOfferLifetime)
+                guard !Task.isCancelled else { return }
+                dismissReminderOffer()
+            }
+        }
+    }
+
+    /// Puts the banner up, if this is a note and a moment worth putting it up
+    /// for.
+    ///
+    /// Four things have to be true, and each rules out a way this could become
+    /// nagging rather than useful: the model has to have read the note as
+    /// something to act on; the note must not already carry a time, since the
+    /// answer is then already yes; this visit must not have asked already; and
+    /// the note must still exist, which it doesn't after a merge or a split.
+    private func offerReminder(_ needed: Bool, at suggested: Date?) {
+        guard needed, !hasDue, !hasOfferedReminder, !handedOff else { return }
+        // A time the model resolved into the past — "this morning", read back
+        // this evening — is a suggestion that has expired. The offer still
+        // stands; it just falls back to the app's own slots.
+        let usable = suggested.flatMap { $0 > .now ? $0 : nil }
+        hasOfferedReminder = true
+        pickerDate = usable ?? Self.defaultSlot
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.84)) {
+            reminderOffer = ReminderOffer(suggestedAt: usable)
+        }
+    }
+
+    private func dismissReminderOffer() {
+        guard reminderOffer != nil else { return }
+        withAnimation(.snappy(duration: 0.24)) { reminderOffer = nil }
+    }
+
+    /// Accepts a time. The order matters: `dueDate` is set first so that
+    /// switching `hasDue` on commits the chosen time rather than the default
+    /// slot the screen opened with.
+    private func setReminder(_ date: Date) {
+        dueDate = date
+        withAnimation(.snappy(duration: 0.24)) {
+            hasDue = true
+            reminderOffer = nil
+        }
     }
 
     // MARK: Floating action
@@ -952,6 +1077,10 @@ struct EditingView: View {
                 streamingPassageID = nil
                 draft = analysis.applied(to: draft)
             }
+            // Asked once the page has settled on the finished report, so the
+            // banner lands over a note the person can actually read rather than
+            // over a shimmering placeholder.
+            offerReminder(analysis.needsReminder, at: analysis.suggestedDueAt)
         } catch is CancellationError {
             // Left the screen mid-rewrite. Put the words back rather than
             // leaving a half-written report standing as the body.
@@ -1032,6 +1161,11 @@ struct EditingView: View {
                     draft = refinement.applied(to: draft, retitling: retitles)
                 }
                 store.upsert(draft)
+                // The re-read is where the question actually gets asked most of
+                // the time: it runs on arrival from a recording and again as the
+                // note is written into, so a note that becomes a commitment
+                // three sentences in still gets offered a reminder.
+                offerReminder(refinement.needsReminder, at: refinement.suggestedDueAt)
             }
         }
     }

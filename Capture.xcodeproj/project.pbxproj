@@ -18,9 +18,9 @@
 		3F03DCC264E6D23003C93C5B /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		5E3703E2A74F8D0CD3B88EC8 /* CaptureApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureApp.swift; sourceTree = "<group>"; };
 		81C2E9D178D83DA4AC73A82F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		87747926BD259319B628DB73 /* Capture.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Capture.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		903377381EEA66ACB2C63FFD /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		BB8A0DED12EF267AE11631D0 /* Capture */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Capture; path = Capture; sourceTree = SOURCE_ROOT; };
+		87747926BD259319B628DB73 /* Capture.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Capture.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		903377381EEA66ACB2C63FFD /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		BB8A0DED12EF267AE11631D0 /* Capture */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Capture; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,7 +122,6 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					7B16652413D28E550B82BAB3 = {
-						DevelopmentTeam = SCT7NDQ4KJ;
 						ProvisioningStyle = Automatic;
 					};
 				};
